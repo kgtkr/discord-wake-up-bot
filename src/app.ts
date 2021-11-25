@@ -48,7 +48,6 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === config.commandName) {
       await interaction.reply({
         content: config.replyContent,
-        ephemeral: true,
       });
       const client = new Client();
       client.on("error", (err: any) => {
