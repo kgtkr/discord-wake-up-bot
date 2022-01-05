@@ -17,6 +17,7 @@ const config: {
   replyContent: string;
   acceptUserIds: string[];
   rejectContent: string;
+  volume?: number;
 } = JSON.parse(fs.readFileSync("config.json", { encoding: "utf8" }));
 
 const rest = new REST({ version: "9" }).setToken(config.token);
@@ -60,7 +61,9 @@ client.on("interactionCreate", async (interaction) => {
         const player: any = await promisify((cb) =>
           client.launch(DefaultMediaReceiver, cb)
         )();
-        await promisify((cb) => client.setVolume({ level: 1 }, cb))();
+        await promisify((cb) =>
+          client.setVolume({ level: config.volume ?? 1 }, cb)
+        )();
         await promisify((cb) =>
           player.load({ contentId: config.contentUrl }, { autoplay: true }, cb)
         )();
