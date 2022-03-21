@@ -1,8 +1,5 @@
 name: ci
-on:
-  push:
-    branches:
-      - master
+on: push
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -25,10 +22,18 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
+        name: Generate tags
+        uses: kgtkr/docker-tags-gen-action@master
+        id: tags
+        with:
+          name: ghcr.io/${{ github.repository_owner }}/discord-wake-up-bot
+      -
         name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/discord-wake-up-bot:${{ github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
