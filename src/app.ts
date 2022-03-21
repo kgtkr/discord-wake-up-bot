@@ -5,6 +5,7 @@ import { Routes } from "discord-api-types/v9";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { Client, DefaultMediaReceiver } from "castv2-client";
 import { promisify } from "util";
+import * as path from "path";
 
 const config: {
   token: string;
@@ -18,7 +19,11 @@ const config: {
   acceptUserIds: string[];
   rejectContent: string;
   volume?: number;
-} = JSON.parse(fs.readFileSync("config.json", { encoding: "utf8" }));
+} = JSON.parse(
+  fs.readFileSync(path.join(process.env["CONFIG_DIR"] ?? "", "config.json"), {
+    encoding: "utf8",
+  })
+);
 
 const rest = new REST({ version: "9" }).setToken(config.token);
 const client = new Discord.Client({
