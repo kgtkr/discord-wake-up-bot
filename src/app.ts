@@ -49,6 +49,7 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     if (interaction.commandName === config.commandName) {
       if (config.acceptUserIds.includes(interaction.user.id)) {
+        console.log("started");
         await interaction.reply({
           content: config.replyContent,
         });
@@ -72,7 +73,11 @@ client.on("interactionCreate", async (interaction) => {
           content: config.rejectContent,
         });
       }
+    } else {
+      console.log(`Unknown command: ${interaction.commandName}`);
     }
+  } else {
+    console.log(`Unknown interaction: ${interaction.type}`);
   }
 });
 
