@@ -19,6 +19,9 @@ const config: {
   acceptUserIds: string[];
   rejectContent: string;
   volume?: number;
+  rejectStartHour?: number;
+  rejectEndHour?: number;
+  rejectHourContent?: string;
 } = JSON.parse(
   fs.readFileSync(path.join(process.env["CONFIG_DIR"] ?? "", "config.json"), {
     encoding: "utf8",
@@ -53,31 +56,46 @@ client.on("ready", () => {});
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     if (interaction.commandName === config.commandName) {
-      if (config.acceptUserIds.includes(interaction.user.id)) {
-        console.log("started");
-        await interaction.reply({
-          content: config.replyContent,
-        });
-        const client = new Client();
-        client.on("error", (err: any) => {
-          console.error(err);
-          client.close();
-        });
-        await promisify((cb) => client.connect(config.castHost, cb))();
-        const player: any = await promisify((cb) =>
-          client.launch(DefaultMediaReceiver, cb)
-        )();
-        await promisify((cb) =>
-          client.setVolume({ level: config.volume ?? 1 }, cb)
-        )();
-        await promisify((cb) =>
-          player.load({ contentId: config.contentUrl }, { autoplay: true }, cb)
-        )();
-      } else {
+      if (!config.acceptUserIds.includes(interaction.user.id)) {
         await interaction.reply({
           content: config.rejectContent,
         });
+        return;
       }
+
+      const hour = new Date().getHours();
+
+      if (
+        config.rejectStartHour !== undefined &&
+        config.rejectStartHour < hour &&
+        config.rejectEndHour !== undefined &&
+        hour < config.rejectEndHour
+      ) {
+        await interaction.reply({
+          content: config.rejectHourContent ?? "rejectHour",
+        });
+        return;
+      }
+
+      console.log("started");
+      await interaction.reply({
+        content: config.replyContent,
+      });
+      const client = new Client();
+      client.on("error", (err: any) => {
+        console.error(err);
+        client.close();
+      });
+      await promisify((cb) => client.connect(config.castHost, cb))();
+      const player: any = await promisify((cb) =>
+        client.launch(DefaultMediaReceiver, cb)
+      )();
+      await promisify((cb) =>
+        client.setVolume({ level: config.volume ?? 1 }, cb)
+      )();
+      await promisify((cb) =>
+        player.load({ contentId: config.contentUrl }, { autoplay: true }, cb)
+      )();
     } else {
       console.log(`Unknown command: ${interaction.commandName}`);
     }
